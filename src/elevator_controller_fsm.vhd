@@ -95,8 +95,26 @@ begin
 	-- CONCURRENT STATEMENTS ------------------------------------------------------------------------------
 	
 	-- Next State Logic
-  
+   f_Q_next <= s_floor2 when (i_up_down = '1' and f_Q = s_floor1) else -- Move up from floor 1  
+            s_floor3 when (i_up_down = '1' and f_Q = s_floor2) else -- Move up from floor 2  
+            s_floor4 when (i_up_down = '1' and f_Q = s_floor3) else -- Move up from floor 3  
+            s_floor3 when (i_up_down = '0' and f_Q = s_floor4) else -- Move down from floor 4  
+            s_floor2 when (i_up_down = '0' and f_Q = s_floor3) else -- Move down from floor 3  
+            s_floor1 when (i_up_down = '0' and f_Q = s_floor2) else -- Move down from floor 2  
+            f_Q;
+	
 	-- Output logic
+	
+	process(f_Q)
+        begin 
+            case f_Q is
+                when s_floor1 => o_floor <= "0001"; 
+                when s_floor2 => o_floor <= "0010";
+                when s_floor3 => o_floor <= "0011";
+                when s_floor4 => o_floor <= "0100";
+                when others => o_floor <= "0001";             
+            end case;
+    end process;  
 
 	-------------------------------------------------------------------------------------------------------
 	
@@ -104,12 +122,22 @@ begin
 	
 	-- State register ------------
 	
+	process(i_clk, i_reset)
+        begin
+        if rising_edge(i_clk) then
+            if i_reset = '1' then
+                f_Q <= s_floor2;  -- Reset state (OFF) synchronous reset 
+            elsif i_stop = '1' then 
+                f_Q <= f_Q;
+            else 
+                f_Q <= f_Q_next;  -- Transition to next state
+            end if;
+        end if;
+    end process;
+	
 	
 	-------------------------------------------------------------------------------------------------------
 	
-	
-
-
 
 end Behavioral;
 
